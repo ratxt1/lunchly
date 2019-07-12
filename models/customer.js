@@ -7,7 +7,6 @@ const Reservation = require("./reservation");
 
 class Customer {
   constructor({ id, firstName, lastName, phone, notes }) {
-    debugger
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
@@ -104,6 +103,14 @@ class Customer {
   async getReservations() {
     return await Reservation.getReservationsForCustomer(this.id);
   }
+
+  async getMostRecentReservation() {
+    let x = await Reservation.getMostRecentReservationForCustomer(this.id)
+    console.log(x)
+    return x;
+  }
+
+
 
   /** save this customer. */
 

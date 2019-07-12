@@ -107,6 +107,30 @@ class Reservation {
     return results.rows.map(row => new Reservation(row));
   }
 
+  static async getMostRecentReservationForCustomer(customerId) {
+    const result = await db.query(
+      `SELECT id, 
+        customer_id AS "customerId", 
+        num_guests AS "numGuests", 
+        start_at AS "startAt", 
+        notes AS "notes"
+      FROM reservations
+      WHERE customer_id = $1
+      ORDER BY start_at DESC
+      LIMIT 1;
+      `,
+      [customerId]
+    )
+
+
+    const reservation = result.rows[0];
+
+    if (reservation === undefined) {
+      return null;
+    }
+    return new Reservation(reservation);
+  }
+
   static async get(id) {
     const results = await db.query(
       `SELECT id, 

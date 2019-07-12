@@ -13,7 +13,25 @@ const router = new express.Router();
 router.get("/", async function(req, res, next) {
   
   try {
-    const customers = await Customer.all();
+    let customers = await Customer.all();
+    // customers = await customers.map(async function(c){
+    //   c.mostRecentReservation = await c.getMostRecentReservation()
+    // })
+
+    for (let c of customers) {
+      mostRecentReservation = await c.getMostRecentReservation()
+      if (mostRecentReservation === null) {
+        formattedMostRecentReservation = "No Reservations"
+      } else {
+        formattedMostRecentReservation = `
+        Reservation at ${mostRecentReservation.getformattedStartAt()} 
+        for party of ${mostRecentReservation.numGuests}`
+      }
+      c.mostRecentReservation = formattedMostRecentReservation
+    }
+
+    customers = await Promise.all(customers)
+    debugger
     return res.render("customer_list.html", { customers });
   } catch (err) {
     return next(err);
