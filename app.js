@@ -2,11 +2,14 @@
 
 const express = require("express");
 const nunjucks = require("nunjucks");
+const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const routes = require("./routes");
 
+
 const app = express();
 
+app.use(morgan('dev'));
 // Parse body for urlencoded (non-JSON) data
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -31,7 +34,7 @@ app.use(function(req, res, next) {
 
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
-
+  console.log(err.stack)
   return res.render("error.html", { err });
 });
 

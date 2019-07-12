@@ -7,11 +7,31 @@ const Reservation = require("./reservation");
 
 class Customer {
   constructor({ id, firstName, lastName, phone, notes }) {
+    debugger
     this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.phone = phone;
     this.notes = notes;
+  }
+
+  /** getters and setters */
+
+  /** reassign falsey notes values to empty string */
+  set notes(val) {
+    if (!val) {
+      val = ""
+    }
+    this._notes = val
+  }
+
+  get notes() {
+    return this._notes
+  }
+
+   /**return full name of a customer instance */
+  get fullName(){
+    return `${this.firstName} ${this.lastName}`; 
   }
 
   /** find all customers. */
@@ -53,6 +73,32 @@ class Customer {
     return new Customer(customer);
   }
 
+  static async getBestCustomers() {
+    const results = await db.query(
+      `SELECT 
+        c.id, 
+        c.first_name AS "firstName",  
+        c.last_name AS "lastName", 
+        c.phone, 
+        c.notes,
+        COUNT(r.id) AS "numReservations" 
+      FROM customers c
+      JOIN reservations r
+      ON (c.id = r.customer_id)
+      GROUP BY c.id
+      ORDER BY COUNT(r.id) DESC
+      LIMIT 10;
+      `
+      );
+    return results.rows.map(c => new Customer(c));
+  }
+  
+  
+  
+
+
+
+
   /** get all reservations for this customer. */
 
   async getReservations() {
@@ -78,6 +124,29 @@ class Customer {
       );
     }
   }
+  
+ 
+
+  /** find all customers whose names partially match search term */
+
+  static async search(search_term) {
+    const results = await db.query(
+      `SELECT id, 
+         first_name AS "firstName",  
+         last_name AS "lastName", 
+         phone, 
+         notes
+       FROM customers
+       WHERE first_name || ' ' || last_name ILIKE $1
+       ORDER BY last_name, first_name`, 
+       [search_term]
+    );
+    return results.rows.map(c => new Customer(c));
+  }
+
+
 }
+
+   
 
 module.exports = Customer;

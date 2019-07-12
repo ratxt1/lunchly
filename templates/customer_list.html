@@ -8,8 +8,15 @@
 
 <ul style="column-count: 4">
   {% for customer in customers %}
-  <li><a href="/{{ customer.id }}/">{{ customer.firstName }} {{ customer.lastName }}</a></li>
+  <li><a href="/{{ customer.id }}/">{{ customer.fullName }}</a></li>
   {% endfor %}
 </ul>
+
+<form action="/search">
+  <input type="text" name="q" id="q">
+  <button class="btn btn-primary">Search</button>
+</form>
+
+ <a href="/best" class="btn btn-primary">Get Best Customers</a>  
 
 {% endblock %}

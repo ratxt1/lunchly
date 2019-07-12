@@ -7,9 +7,11 @@ const Reservation = require("./models/reservation");
 
 const router = new express.Router();
 
+
 /** Homepage: show list of customers. */
 
 router.get("/", async function(req, res, next) {
+  
   try {
     const customers = await Customer.all();
     return res.render("customer_list.html", { customers });
@@ -46,7 +48,32 @@ router.post("/add/", async function(req, res, next) {
   }
 });
 
-/** Show a customer, given their ID. */
+router.get("/search", async function(req, res, next) {
+  try {
+    const search_term = `%${req.query.q}%`;
+    const customers = await Customer.search(search_term);
+    
+    return res.render("customer_list.html", { customers });
+
+  } catch(err) {
+    return next(err);
+  }
+})
+
+
+
+
+
+/** show 10 customers have most reservation */
+router.get("/best", async function(req, res, next) {
+  try {
+    const customers = await Customer.getBestCustomers();
+    return res.render("customer_list.html", { customers });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 
 router.get("/:id/", async function(req, res, next) {
   try {
@@ -91,10 +118,10 @@ router.post("/:id/edit/", async function(req, res, next) {
 
 /** Handle adding a new reservation. */
 
-router.post("/:id/add-reservation/", async function(req, res, next) {
+router.post("/:customer_id/add-reservation/", async function(req, res, next) {
   try {
-    const customerId = req.params.id;
-    const startAt = new Date(req.body.startAt);
+    const customerId = req.params.customer_id;
+    const startAt = new Date(req.body.date + " " + req.body.time);
     const numGuests = req.body.numGuests;
     const notes = req.body.notes;
 
@@ -111,5 +138,38 @@ router.post("/:id/add-reservation/", async function(req, res, next) {
     return next(err);
   }
 });
+
+/** Handle editing a new reservation. */
+
+/** Show form to edit a reservation. */
+
+router.get("/:id/edit-reservation/", async function(req, res, next) {
+  try {
+    const reservation = await Reservation.get(req.params.id);
+    res.render("reservation_edit_form.html", { reservation });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
+
+
+router.post("/:id/edit-reservation/", async function(req, res, next) {
+  try {
+    const reservation = await Reservation.get(req.params.id);
+    reservation.startAt = new Date(req.body.date + " " + req.body.time);
+    reservation.numGuests = req.body.numGuests;
+    reservation.notes = req.body.notes;
+    await reservation.save();
+
+
+    return res.redirect(`/${reservation.customerId}/`);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
 
 module.exports = router;
